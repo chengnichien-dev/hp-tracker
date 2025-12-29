@@ -1,0 +1,513 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <title>Upside down 之戰</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        .hp-bar-wrap {
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .hp-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #4caf50, #7ddc6f);
+            transition: width .25s ease;
+        }
+
+            .hp-bar.low {
+                background: linear-gradient(90deg, #ff6b6b, #ff8a8a);
+            }
+
+            .hp-bar.mid {
+                background: linear-gradient(90deg, #ffb74d, #ffcc80);
+            }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", system-ui, -apple-system;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 背景：你可以換成自己喜歡的圖片或顏色 */
+            background-image: url("https://thegeek.games/wp-content/uploads/2025/12/theGeek-Stranger-Things-5-nyito.jpg");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(6px);
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.25);
+            width: 95%;
+            max-width: 900px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .sides {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .side {
+            flex: 1 1 300px;
+            border-radius: 12px;
+            background: #f2f2f7;
+            padding: 10px;
+        }
+
+        .side-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .slot {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 0.6fr;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 6px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+        }
+
+            .slot input[type="text"] {
+                width: 100%;
+                padding: 4px 6px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+                font-size: 0.9rem;
+            }
+
+        .hp-area {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slot input[type="number"] {
+            width: 70px;
+            padding: 4px 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 4px;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: none;
+            font-size: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,.18);
+        }
+
+            button:active {
+                transform: scale(.95);
+            }
+
+        .btn-minus {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-plus {
+            background: #4caf50;
+            color: white;
+        }
+
+        .footer-controls {
+            margin-top: 10px;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+            .footer-controls input[type="number"] {
+                width: 80px;
+                padding: 4px 6px;
+                border-radius: 6px;
+                border: 1px solid #aaa;
+                text-align: center;
+            }
+
+        .btn-reset {
+            background: #888;
+            color: white;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #e0e0ea;
+            color: #555;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel">
+        <h1>桌遊血量計算器</h1>
+        <div class="subtitle">點擊 ± 調整血量。怪物血量 ≤ 0 會自動清空該格。</div>
+
+        <div class="sides">
+            <!-- 友軍區 -->
+            <div class="side">
+                <div class="side-title">友軍陣營</div>
+                <div class="tag">刪到 0 只代表倒下，格子仍可繼續用</div>
+
+                <!-- 7 個友軍格子 -->
+                <!-- index 從 0 到 6 -->
+                <div class="slot">
+                    <input type="text" id="friend-name-0" placeholder="角色名稱（例：11 號）">
+                    <div class="hp-area">
+                        HP：<input type="number" id="friend-hp-0" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="friend-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('friend', 0, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('friend', 0, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="friend-name-1" placeholder="角色名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="friend-hp-1" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="friend-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('friend', 1, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('friend', 1, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="friend-name-2" placeholder="角色名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="friend-hp-2" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="friend-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('friend', 2, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('friend', 2, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="friend-name-3" placeholder="角色名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="friend-hp-3" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="friend-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('friend', 3, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('friend', 3, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="friend-name-4" placeholder="角色名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="friend-hp-4" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="friend-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('friend', 4, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('friend', 4, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="friend-name-5" placeholder="角色名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="friend-hp-5" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="friend-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('friend', 5, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('friend', 5, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="friend-name-6" placeholder="角色名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="friend-hp-6" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="friend-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('friend', 6, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('friend', 6, +1)">＋</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 敵軍區 -->
+            <div class="side">
+                <div class="side-title">敵軍 / 怪物</div>
+                <div class="tag">血量 ≤ 0：自動清空，格子釋出</div>
+
+                <!-- 7 個敵軍格子 -->
+                <div class="slot">
+                    <input type="text" id="enemy-name-0" placeholder="怪物名稱（例：Demogorgon）">
+                    <div class="hp-area">
+                        HP：<input type="number" id="enemy-hp-0" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="enemy-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('enemy', 0, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('enemy', 0, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="enemy-name-1" placeholder="怪物名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="enemy-hp-1" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="enemy-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('enemy', 1, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('enemy', 1, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="enemy-name-2" placeholder="怪物名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="enemy-hp-2" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="enemy-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('enemy', 2, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('enemy', 2, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="enemy-name-3" placeholder="怪物名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="enemy-hp-3" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="enemy-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('enemy', 3, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('enemy', 3, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="enemy-name-4" placeholder="怪物名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="enemy-hp-4" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="enemy-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('enemy', 4, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('enemy', 4, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="enemy-name-5" placeholder="怪物名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="enemy-hp-5" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="enemy-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('enemy', 5, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('enemy', 5, +1)">＋</button>
+                    </div>
+                </div>
+
+                <div class="slot">
+                    <input type="text" id="enemy-name-6" placeholder="怪物名稱">
+                    <div class="hp-area">
+                        HP：<input type="number" id="enemy-hp-6" min="0" placeholder="輸入 HP">
+                    </div>
+                    <div class="hp-bar-wrap">
+                        <div class="hp-bar" id="enemy-bar-0"></div>
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn-minus" onclick="changeHp('enemy', 6, -1)">−</button>
+                        <button class="btn-plus" onclick="changeHp('enemy', 6, +1)">＋</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-controls">
+            <span>快速設置：所有空格初始 HP</span>
+            <input type="number" id="bulkHp" value="10" min="0">
+            <button class="btn-reset" onclick="setAllHp()">套用到所有空格</button>
+        </div>
+    </div>
+
+    <script>
+        function updateHpBar(side, index) {
+            const hpInput = document.getElementById(`${side}-hp-${index}`);
+            const bar = document.getElementById(`${side}-bar-${index}`);
+
+            let hp = parseInt(hpInput.value, 10);
+            if (isNaN(hp)) hp = 0;
+
+            // 你可以在這裡自訂「最大血量」
+            // 目前假設初始輸入值就是最大血量（常見於桌遊）
+            let max = hpInput.dataset.maxHp
+                ? parseInt(hpInput.dataset.maxHp, 10)
+                : hp;
+
+            // 第一次輸入時，把該值存成 max HP
+            if (!hpInput.dataset.maxHp && hp > 0) {
+                hpInput.dataset.maxHp = hp;
+                max = hp;
+            }
+
+            const percent = max > 0 ? Math.max(0, Math.min(100, (hp / max) * 100)) : 0;
+
+            bar.style.width = percent + "%";
+
+            bar.classList.remove("low", "mid");
+            if (percent <= 30) bar.classList.add("low");
+            else if (percent <= 60) bar.classList.add("mid");
+        }
+
+    function changeHp(side, index, delta) {
+        const hpInput = document.getElementById(side + '-hp-' + index);
+        const nameInput = document.getElementById(side + '-name-' + index);
+
+        let hp = parseInt(hpInput.value, 10);
+
+        // 如果還沒輸入 HP，視為 0 開始
+        if (isNaN(hp)) hp = 0;
+
+        hp += delta;
+
+        if (side === 'enemy') {
+            // 怪物血量 <= 0：清空該格，釋出空位
+            if (hp <= 0) {
+                hpInput.value = "";
+                nameInput.value = "";
+                return;
+            }
+        } else {
+            // 友軍：血量不能低於 0，但不會清空
+            if (hp < 0) hp = 0;
+        }
+
+        hpInput.value = hp;
+        updateHpBar(side, index);
+
+    }
+
+    function setAllHp() {
+        const bulkInput = document.getElementById('bulkHp');
+        let hp = parseInt(bulkInput.value, 10);
+        if (isNaN(hp) || hp < 0) hp = 0;
+
+        for (let i = 0; i < 7; i++) {
+            const friendHpInput = document.getElementById('friend-hp-' + i);
+            const enemyHpInput = document.getElementById('enemy-hp-' + i);
+            friendHpInput.value = hp;
+            enemyHpInput.value = hp;
+            updateHpBar("friend", i);
+            updateHpBar("enemy", i);
+
+        }
+    }
+    </script>
+</body>
+</html>
